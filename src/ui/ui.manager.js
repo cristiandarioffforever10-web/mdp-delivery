@@ -42,8 +42,7 @@ export const uiManager = {
                     b.style.color = 'white';
                     b.classList.add('num-btn-active');
                 } else {
-                    b.style.borderColor = '#00A382';
-                    b.style.color = '#00A382';
+                    b.classList.add('btn-local-gradiente');
                 }
             }
         });
@@ -72,10 +71,10 @@ export const uiManager = {
         let unassignedCount = 0;
         activeOrders.forEach(o => {
             const cardElement = document.createElement('div');
-            cardElement.className = "glass-panel p-4 rounded-xl shadow-md card-draggable flex flex-col gap-3 border-l-4";
+            cardElement.className = `glass-panel p-4 rounded-xl shadow-md card-draggable flex flex-col gap-3 ${!o.repartidor ? 'card-local-border' : 'border-l-4'}`;
 
             const staffIdx = staff.indexOf(o.repartidor);
-            cardElement.style.borderLeftColor = o.repartidor ? this.getStaffColor(o.repartidor, staffIdx) : '#64748b';
+            cardElement.style.borderLeftColor = o.repartidor ? this.getStaffColor(o.repartidor, staffIdx) : '';
             cardElement.draggable = true;
             cardElement.innerHTML = this.createCardHTML(o, staff);
 
@@ -114,7 +113,7 @@ export const uiManager = {
                 </div>
                 <div class="text-right flex flex-col items-end">
                     <span class="text-xs font-bold text-slate-500 block mb-1">${o.time}</span>
-                    <span class="text-[10px] font-black block uppercase px-2 py-0.5 rounded bg-slate-800" style="color:${isAssigned ? '#ffffff' : '#67e8f9'}">${isAssigned ? o.repartidor : 'EN CASA'}</span>
+                    <span class="text-[10px] font-black block uppercase px-2 py-0.5 rounded ${isAssigned ? 'bg-slate-800' : 'badge-local-gradiente'}" style="color:${isAssigned ? '#ffffff' : '#0f172a'}">${isAssigned ? o.repartidor : 'EN CASA'}</span>
                     ${isAssigned ? '' : '<span class="text-[9px] block text-slate-400 mt-1">Control local</span>'}
                 </div>
             </div>
