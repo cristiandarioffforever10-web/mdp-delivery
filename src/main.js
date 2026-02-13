@@ -178,14 +178,14 @@ window.onload = () => {
         if (isHidden) {
             opsPanel.classList.remove('hidden');
             kanban.classList.remove('hidden');
-            btn.innerHTML = '<i class="fas fa-power-off mr-2"></i>DESACTIVAR';
+            btn.innerHTML = '<i class="fas fa-power-off"></i>';
             btn.classList.add('bg-red-600', 'hover:bg-red-500');
             btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
             uiManager.renderApp(window.AppState.data, handlers);
         } else {
             opsPanel.classList.add('hidden');
             kanban.classList.add('hidden');
-            btn.innerHTML = '<i class="fas fa-terminal mr-2"></i>ACTIVAR';
+            btn.innerHTML = '<i class="fas fa-terminal"></i>';
             btn.classList.remove('bg-red-600', 'hover:bg-red-500');
             btn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
         }
