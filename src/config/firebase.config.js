@@ -3,12 +3,13 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth
 import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCkQjghWrHCtpBwU8QTtup_L2F4-u5LL2A",
-  authDomain: "tarjetacredito-82a4a.firebaseapp.com",
-  projectId: "tarjetacredito-82a4a",
-  storageBucket: "tarjetacredito-82a4a.firebasestorage.app",
-  messagingSenderId: "120166410587",
-  appId: "1:120166410587:web:e27a319b34d0920e6d527e"
+   apiKey: "AIzaSyAbcosP9y2czuIJmzJfNwZdZm9H8Oukzak",
+    authDomain: "demo3-rt360-2secciones.firebaseapp.com",
+    projectId: "demo3-rt360-2secciones",
+    storageBucket: "demo3-rt360-2secciones.firebasestorage.app",
+    messagingSenderId: "1026745450194",
+    appId: "1:1026745450194:web:0914754c167b94f420f70b",
+    measurementId: "G-77VZPQEBSB"
 };
 
 const app = initializeApp(firebaseConfig);

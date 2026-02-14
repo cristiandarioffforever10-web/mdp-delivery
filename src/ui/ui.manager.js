@@ -68,7 +68,6 @@ export const uiManager = {
             .filter(o => o.status !== 'entregado')
             .sort((a, b) => b.timestamp - a.timestamp);
 
-        let unassignedCount = 0;
         activeOrders.forEach(o => {
             const cardElement = document.createElement('div');
             cardElement.className = `glass-panel p-4 rounded-xl shadow-md card-draggable flex flex-col gap-3 ${!o.repartidor ? 'card-local-border' : 'border-l-4'}`;
@@ -84,14 +83,8 @@ export const uiManager = {
                 const safeName = o.repartidor.replace(/\s/g, '');
                 const col = document.getElementById(`col-${safeName}`);
                 if (col) col.appendChild(cardElement);
-            } else {
-                document.getElementById('col-unassigned').appendChild(cardElement);
-                unassignedCount++;
             }
         });
-
-        const counter = document.getElementById('count-unassigned');
-        if (counter) counter.textContent = unassignedCount;
     },
 
     createCardHTML(o, staff) {
@@ -238,6 +231,13 @@ export const uiManager = {
                 const b = document.createElement('button');
                 b.className = 'num-btn shadow-sm';
                 b.textContent = n;
+                b.draggable = true;
+
+                b.ondragstart = (e) => {
+                    e.dataTransfer.setData('id', n);
+                    e.dataTransfer.effectAllowed = 'move';
+                };
+
                 b.onclick = async () => {
                     const existingOrder = window.AppState.data.orders[n];
                     if (existingOrder && existingOrder.status === 'entregado') {
@@ -249,10 +249,66 @@ export const uiManager = {
                         handlers.onCreateOrder(n);
                     }
                 };
+
+                b.ondblclick = (e) => {
+                    e.preventDefault();
+                    this.showDriverAssignmentMenu(n, handlers);
+                };
+
                 grid.appendChild(b);
             }
             track.appendChild(grid);
         }
+    },
+
+    showDriverAssignmentMenu(id, handlers) {
+        const staff = window.AppState.data.staff;
+        if (staff.length === 0) {
+            alert("No hay repartidores configurados.");
+            return;
+        }
+
+        const menu = document.createElement('div');
+        menu.className = 'fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 backdrop-blur-sm';
+        menu.id = 'quick-assign-menu';
+        
+        const content = document.createElement('div');
+        content.className = 'glass-panel p-6 rounded-3xl shadow-2xl border border-white/10 max-w-xs w-full flex flex-col gap-4 animate-in fade-in zoom-in duration-200';
+        
+        content.innerHTML = `
+            <div class="text-center">
+                <p class="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">Asignar Ticket</p>
+                <h3 class="text-3xl font-black text-white font-mono">#${id}</h3>
+            </div>
+            <div class="grid grid-cols-1 gap-2 mt-2">
+                ${staff.map((r, i) => `
+                    <button class="driver-opt flex items-center justify-between p-4 rounded-xl font-bold text-sm transition-all bg-white/5 text-slate-300 hover:bg-emerald-500 hover:text-white" data-driver="${r}">
+                        <span>${r}</span>
+                        <i class="fas fa-chevron-right text-[10px] opacity-50"></i>
+                    </button>
+                `).join('')}
+            </div>
+            <button id="cancel-quick-assign" class="mt-2 p-3 text-xs font-black text-slate-500 uppercase hover:text-white transition-colors">Cancelar</button>
+        `;
+
+        menu.appendChild(content);
+        document.body.appendChild(menu);
+
+        content.querySelectorAll('.driver-opt').forEach(btn => {
+            btn.onclick = async () => {
+                const driver = btn.getAttribute('data-driver');
+                const orders = window.AppState.data.orders;
+                if (!orders[id]) {
+                    await handlers.onCreateOrder(id, driver);
+                } else {
+                    await handlers.onAssignOrder(id, driver);
+                }
+                menu.remove();
+            };
+        });
+
+        document.getElementById('cancel-quick-assign').onclick = () => menu.remove();
+        menu.onclick = (e) => { if (e.target === menu) menu.remove(); };
     },
 
     slideNumbers(d, state) {
@@ -282,7 +338,16 @@ export const uiManager = {
         dz.ondragover = (e) => e.preventDefault();
         dz.ondragenter = (e) => { e.preventDefault(); dz.classList.add('drop-zone-active'); };
         dz.ondragleave = (e) => { if (!dz.contains(e.relatedTarget)) dz.classList.remove('drop-zone-active'); };
-        dz.ondrop = (e) => { dz.classList.remove('drop-zone-active'); handlers.onAssignOrder(e.dataTransfer.getData('id'), repName); };
+        dz.ondrop = async (e) => { 
+            dz.classList.remove('drop-zone-active'); 
+            const id = e.dataTransfer.getData('id');
+            const orders = window.AppState.data.orders;
+            if (!orders[id]) {
+                await handlers.onCreateOrder(id, repName);
+            } else {
+                await handlers.onAssignOrder(id, repName);
+            }
+        };
     },
 
     playSound(f) {

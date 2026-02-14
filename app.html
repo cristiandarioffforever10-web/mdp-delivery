@@ -22,8 +22,7 @@
             --bg-card: #1e293b;
             /*#F4F7F6*/
             --bg-input: #0f172a;
-            --cocina-bg: var(--mostrador-bg);
-            --mostrador-bg: #2F1B05;
+            --mostrador-bg: #1a0f02;
             --repartidor-bg: rgba(139, 92, 246, 0.06);
             --accent-emerald: #00A382;
             --accent-violet: #8b5cf6;
@@ -39,7 +38,6 @@
             /*  #F4F7F6 */
             --bg-card: #ffffff;
             --bg-input: #f8fafc;
-            --cocina-bg: var(--mostrador-bg);
             --mostrador-bg: #2F1B05;
             --repartidor-bg: rgba(139, 92, 246, 0.04);
             --text-main: #0f172a;
@@ -227,52 +225,22 @@
             transform: translateX(0);
         }
 
-        /* Zona Cocina: Matriz de Tickets - ahora azul profundo / cian */
+        /* Zona Cocina: Matriz de Tickets - Espresso & Gold */
         .cocina-panel {
-            background: var(--cocina-bg) !important;
-            border-color: rgba(6, 182, 212, 0.28) !important;
-            box-shadow: 0 8px 30px rgba(6, 182, 212, 0.06);
-            transition: box-shadow 200ms ease, background-color 200ms ease, border-color 200ms ease;
+            background: linear-gradient(145deg, #1a0f02 0%, #2F1B05 100%) !important;
+            border: 1px solid rgba(217, 119, 6, 0.3) !important;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(217, 119, 6, 0.1);
+            transition: all 300ms ease;
         }
 
         body.light-mode .cocina-panel {
-            background: var(--cocina-bg) !important;
-            border-color: rgba(6, 182, 212, 0.40) !important;
-            box-shadow: 0 8px 30px rgba(6, 182, 212, 0.10);
+            background: #2F1B05 !important;
+            border-color: rgba(217, 119, 6, 0.4) !important;
         }
 
-        /* Zona Mostrador: Columna Entrada (resaltada para modo oscuro y claro) */
-        /* Nuevo wrapper para unificar header y body */
-        .mostrador-col-wrapper {
-            background: var(--mostrador-bg) !important;
-            border: 1px solid rgba(217, 119, 6, 0.2) !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 
-                        inset 0 1px 1px rgba(217, 119, 6, 0.05) !important;
-            transition: box-shadow 200ms ease, background-color 200ms ease, border-color 200ms ease;
-        }
-
-        /* Reset inner column style for #col-unassigned since the wrapper now handles the card look */
-        #col-unassigned {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-        }
-
-        body.light-mode .mostrador-col-wrapper {
-            background: var(--mostrador-bg) !important;
-            /* Keep using the variable for consistency, or adjust for light mode if it was different before */
-            border-color: rgba(26, 34, 56, 0.40) !important;
-            box-shadow: 0 8px 30px rgba(26, 34, 56, 0.10);
-        }
+        /* Repartidores: fondo distintivo para cada columna (aplicado desde JS) */
 
 
-        /* Contador de pedidos en Mostrador: más visible */
-        #count-unassigned {
-            background-color: #D97706 !important;
-            color: #ffffff !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            box-shadow: 0 0 12px rgba(217, 119, 6, 0.3);
-        }
 
         /* Repartidores: fondo distintivo para cada columna (aplicado desde JS) */
         /* Forzar que el fondo de las columnas de repartidores use el fondo principal (modo oscuro) */
@@ -304,7 +272,7 @@
         }
 
         /* Reducir en 15% el ancho de cada columna de repartidor */
-        .rep-col, .mostrador-col-wrapper {
+        .rep-col {
             width: 17rem !important;
         }
 
@@ -509,19 +477,7 @@
         <!-- Main Kanban -->
         <main id="kanban-container" class="hidden">
             <div id="orders-kanban" class="flex gap-4 overflow-x-auto pb-6 h-full">
-                <!-- Columna Entrada - LISTOS PARA DESPACHAR / BARRA o mesada -->
-                <div class="flex flex-col flex-shrink-0 mostrador-col-wrapper rounded-2xl p-0.5">
-                    <!-- Added wrapper class -->
-                    <div class="flex justify-between items-center mb-0 px-4 pt-3 pb-2"> <!-- Adjusted padding/margin -->
-                        <span class="text-xs font-black text-white/50 uppercase tracking-widest">Mostrador de
-                            despacho</span>
-                        <span id="count-unassigned"
-                            class="bg-black/20 text-emerald-400 text-xs font-black px-2.5 py-1 rounded-md border border-white/10">0</span>
-                    </div>
-                    <div id="col-unassigned" data-repartidor=""
-                        class="kanban-col flex flex-col gap-3 min-h-[300px] p-2 overflow-y-auto column-scroll flex-grow border-none shadow-none bg-transparent">
-                    </div>
-                </div>
+                <!-- Las columnas de repartidores se cargarán dinámicamente aquí -->
             </div>
         </main>
     </div>
