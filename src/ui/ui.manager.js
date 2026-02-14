@@ -281,12 +281,17 @@ export const uiManager = {
                 <h3 class="text-3xl font-black text-white font-mono">#${id}</h3>
             </div>
             <div class="grid grid-cols-1 gap-2 mt-2">
-                ${staff.map((r, i) => `
-                    <button class="driver-opt flex items-center justify-between p-4 rounded-xl font-bold text-sm transition-all bg-white/5 text-slate-300 hover:bg-emerald-500 hover:text-white" data-driver="${r}">
+                ${staff.map((r, i) => {
+                    const color = this.getStaffColor(r, i);
+                    return `
+                    <button class="driver-opt flex items-center justify-between p-4 rounded-xl font-bold text-sm transition-all text-white" 
+                            data-driver="${r}" 
+                            style="background-color: ${color}; border: 1px solid rgba(255,255,255,0.1);">
                         <span>${r}</span>
-                        <i class="fas fa-chevron-right text-[10px] opacity-50"></i>
+                        <i class="fas fa-chevron-right text-[10px] opacity-70"></i>
                     </button>
-                `).join('')}
+                    `;
+                }).join('')}
             </div>
             <button id="cancel-quick-assign" class="mt-2 p-3 text-xs font-black text-slate-500 uppercase hover:text-white transition-colors">Cancelar</button>
         `;
