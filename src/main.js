@@ -9,7 +9,8 @@ window.AppState = {
         orders: {},
         staff: [],
         currentUser: null,
-        userRole: 'operativo'
+        userRole: 'operativo',
+        staffName: null
     },
     update(key, payload) {
         this.data[key] = payload;
@@ -29,6 +30,8 @@ const handlers = {
         }
         return databaseService.deleteOrder(id).then(() => uiManager.playSound("A2"));
     },
+    onReportIncident: (id, text) => databaseService.reportIncident(id, text).then(() => uiManager.playSound("D4")),
+    onRespondIncident: (id, text) => databaseService.respondToIncident(id, text).then(() => uiManager.playSound("F4")),
     onUpdateStaff: (list) => {
         if (window.AppState.data.userRole !== 'admin') {
             console.warn("Acción denegada: Solo administradores pueden gestionar la flota.");
@@ -46,7 +49,7 @@ const handlers = {
 // Initialize Application
 const init = async () => {
     const loadingScreen = document.getElementById('loading-screen');
-    
+
     authService.onAuthChange(async (user) => {
         if (user) {
             let role = localStorage.getItem('rutatotal_role') || 'operativo';
@@ -61,7 +64,7 @@ const init = async () => {
                 isAuthorized = await authService.checkAuthorization(user.email);
                 role = isAuthorized ? 'admin' : null;
             }
-            
+
             if (!isAuthorized) {
                 console.warn("User authenticated but not authorized.");
                 await authService.logout();
@@ -71,8 +74,11 @@ const init = async () => {
             }
 
             window.AppState.data.userRole = role; // Store role in state
+            const staffName = user.isAnonymous ? localStorage.getItem('rutatotal_staff_name') : null;
+            window.AppState.data.staffName = staffName;
+
             window.AppState.update('currentUser', user);
-            
+
             const userDisplay = document.getElementById('user-display');
             if (userDisplay) {
                 const displayName = user.isAnonymous ? localStorage.getItem('rutatotal_staff_name') : user.email;
@@ -104,7 +110,7 @@ const init = async () => {
 
 function applyRoleRestrictions(role) {
     const isOperativo = role === 'operativo';
-    
+
     // Elementos a ocultar/mostrar según rol
     const adminOnlyElements = [
         'download-pdf-btn',
@@ -112,7 +118,7 @@ function applyRoleRestrictions(role) {
         'new-staff-name',
         'add-staff-btn'
     ];
-    
+
     adminOnlyElements.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = isOperativo ? 'none' : 'block';
@@ -140,12 +146,16 @@ function applyRoleRestrictions(role) {
         }
     });
 
-    // Desbloquear botones de acceso a modales
-    ['open-staff-modal-btn', 'open-history-modal-btn'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'flex';
-    });
-    
+    // Accesibilidad de modales
+    const staffBtn = document.getElementById('open-staff-modal-btn');
+    const historyBtn = document.getElementById('open-history-modal-btn');
+
+    // Repartidores no necesitan gestionar flota, administradores y operativos del local sí
+    const isDeliveryView = isOperativo && localStorage.getItem('rutatotal_staff_name');
+
+    if (staffBtn) staffBtn.style.display = isDeliveryView ? 'none' : 'flex';
+    if (historyBtn) historyBtn.style.display = 'flex'; // Reportes para todos (aunque filtrados)
+
     if (isOperativo) console.log("Modo Operativo: Restricciones de acción aplicadas.");
 }
 
@@ -172,9 +182,9 @@ window.onload = () => {
         const opsPanel = document.getElementById('ops-panel');
         const kanban = document.getElementById('kanban-container');
         const btn = document.getElementById('start-demo-btn');
-        
+
         const isHidden = opsPanel.classList.contains('hidden');
-        
+
         if (isHidden) {
             opsPanel.classList.remove('hidden');
             kanban.classList.remove('hidden');

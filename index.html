@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,28 +8,51 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        body { background-color: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        .role-card { transition: all 0.3s ease; cursor: pointer; border: 2px solid transparent; }
-        .role-card.active { border-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .role-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .role-card.active {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
     </style>
 </head>
+
 <body class="min-h-screen flex items-center justify-center p-4">
 
     <div id="login-container" class=" mx-5  ">
         <div class="text-center mb-8">
-            <div class="bg-emerald-500 w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl mx-auto mb-4 shadow-lg shadow-emerald-500/20">
+            <div
+                class="bg-emerald-500 w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl mx-auto mb-4 shadow-lg shadow-emerald-500/20">
                 <i class="fas fa-shield-alt"></i>
             </div>
-            <h1 class="text-2xl font-black uppercase tracking-tight">RutaTotal<span class="text-emerald-500">360</span></h1>
+            <h1 class="text-2xl font-black uppercase tracking-tight">RutaTotal<span class="text-emerald-500">360</span>
+            </h1>
             <p class="text-slate-400 text-xs mt-2 uppercase tracking-widest">Panel de Acceso Seguro</p>
         </div>
 
         <div class="glass p-8 rounded-3xl shadow-2xl">
             <div class="text-center mb-6">
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Administradores</p>
-                <button onclick="handleGoogleLogin()" class="w-full flex items-center justify-center gap-4 bg-white hover:bg-slate-100 text-slate-900 font-bold py-4 rounded-xl transition-all shadow-lg group mb-6">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" alt="Google">
+                <button onclick="handleGoogleLogin()"
+                    class="w-full flex items-center justify-center gap-4 bg-white hover:bg-slate-100 text-slate-900 font-bold py-4 rounded-xl transition-all shadow-lg group mb-6">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5"
+                        alt="Google">
                     <span class="text-sm">Iniciar Sesión con Google</span>
                 </button>
 
@@ -39,8 +63,10 @@
                 </div>
 
                 <div class="space-y-4">
-                    <input type="password" id="pin-code" placeholder="PIN de Acceso" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl focus:border-emerald-500 outline-none transition-all text-center tracking-widest">
-                    <button onclick="handlePINLogin()" class="w-full bg-slate-800 hover:bg-slate-700 text-emerald-500 font-black py-4 rounded-xl uppercase text-xs tracking-widest shadow-lg transition-all">
+                    <input type="password" id="pin-code" placeholder="PIN de Acceso"
+                        class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl focus:border-emerald-500 outline-none transition-all text-center tracking-widest">
+                    <button onclick="handlePINLogin()"
+                        class="w-full bg-slate-800 hover:bg-slate-700 text-emerald-500 font-black py-4 rounded-xl uppercase text-xs tracking-widest shadow-lg transition-all">
                         Entrar con PIN
                     </button>
                 </div>
@@ -54,7 +80,8 @@
     <div id="app-content" class="hidden text-center">
         <h1 class="text-4xl font-black">BIENVENIDO: <span id="user-role-display" class="text-emerald-500"></span></h1>
         <p class="mt-4 text-slate-400">Redirigiendo a la consola de despacho...</p>
-        <button onclick="window.location.href = window.getURLs().login" class="mt-8 text-xs text-slate-500 underline uppercase">Cerrar Sesión</button>
+        <button onclick="window.location.href = window.getURLs().login"
+            class="mt-8 text-xs text-slate-500 underline uppercase">Cerrar Sesión</button>
     </div>
 
     <script type="module">
@@ -95,7 +122,7 @@
                 const staffData = await authService.loginWithPIN(pin);
                 localStorage.setItem('rutatotal_role', 'operativo');
                 localStorage.setItem('rutatotal_staff_name', staffData.name || 'Operario');
-                window.location.href = URLs.app + '?role=operativo';
+                window.location.href = URLs.delivery;
             } catch (e) {
                 showError("Acceso denegado: PIN incorrecto");
             }
@@ -111,4 +138,5 @@
         window.getURLs = () => URLs;
     </script>
 </body>
+
 </html>

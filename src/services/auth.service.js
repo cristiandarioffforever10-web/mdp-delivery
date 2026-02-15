@@ -1,18 +1,18 @@
 import { auth, db } from '../config/firebase.config.js';
-import { 
-    signInAnonymously, 
-    onAuthStateChanged, 
-    signOut, 
-    GoogleAuthProvider, 
-    signInWithPopup 
+import {
+    signInAnonymously,
+    onAuthStateChanged,
+    signOut,
+    GoogleAuthProvider,
+    signInWithPopup
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { 
-    doc, 
-    getDoc, 
-    collection, 
-    query, 
-    where, 
-    getDocs 
+import {
+    doc,
+    getDoc,
+    collection,
+    query,
+    where,
+    getDocs
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 const googleProvider = new GoogleAuthProvider();
@@ -50,8 +50,9 @@ export const authService = {
 
             if (!querySnapshot.empty) {
                 const staffData = querySnapshot.docs[0].data();
-                // Aseguramos que el rol sea operativo para aplicar las restricciones
-                return { ...staffData, role: 'operativo' };
+                // Limpiamos espacios y aseguramos el rol
+                const name = (staffData.name || '').trim();
+                return { ...staffData, name, role: 'operativo' };
             } else {
                 // Si el PIN no es válido, cerramos la sesión anónima
                 await signOut(auth);
@@ -59,6 +60,9 @@ export const authService = {
             }
         } catch (error) {
             console.error("PIN Login Error:", error);
+            if (error.code === 'auth/admin-restricted-operation') {
+                throw new Error("ERROR CRÍTICO: Debes habilitar 'Acceso Anónimo' en tu consola de Firebase (Sección Authentication -> Sign-in method).");
+            }
             throw error;
         }
     },

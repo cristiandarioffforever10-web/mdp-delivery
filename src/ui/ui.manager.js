@@ -7,16 +7,27 @@ let searchQuery = "";
 let touchDraggedId = null;
 let synth = null;
 let lastStaffHash = "";
+let notifiedIncidents = new Set();
 
 export const uiManager = {
     // 1. Core Render Loop
     renderApp(state, handlers) {
         if (!state) return;
-        const { orders, staff, userRole } = state;
+        const { orders, staff, userRole, staffName } = state;
 
         this.renderKitchen(orders, staff, handlers);
-        this.renderKanban(orders, staff, handlers);
+        this.renderKanban(orders, staff, handlers, staffName, userRole);
         this.renderHistory(orders, staff, handlers, userRole);
+
+        // Alerta sonora para el local por nuevas incidencias
+        if (!staffName || userRole === 'admin') {
+            Object.values(orders).forEach(o => {
+                if (o.incident && !o.response && !notifiedIncidents.has(o.id + '_' + o.incidentTime)) {
+                    this.playSound("A3"); // Sonido de alerta
+                    notifiedIncidents.add(o.id + '_' + o.incidentTime);
+                }
+            });
+        }
     },
 
     // 2. Component: Kitchen (Cocina)
@@ -52,13 +63,16 @@ export const uiManager = {
     },
 
     // 3. Component: Kanban Board
-    renderKanban(orders, staff, handlers) {
+    renderKanban(orders, staff, handlers, staffName, userRole) {
         const container = document.getElementById('orders-kanban');
         if (!container) return;
 
-        const currentHash = JSON.stringify(staff);
+        // Si es operativo y tiene un staffName, solo mostramos su columna
+        const visibleStaff = (userRole === 'operativo' && staffName) ? [staffName] : staff;
+
+        const currentHash = JSON.stringify(visibleStaff);
         if (lastStaffHash !== currentHash) {
-            this.rebuildKanbanColumns(container, staff, handlers);
+            this.rebuildKanbanColumns(container, visibleStaff, handlers);
             lastStaffHash = currentHash;
         }
 
@@ -75,7 +89,7 @@ export const uiManager = {
             const staffIdx = staff.indexOf(o.repartidor);
             cardElement.style.borderLeftColor = o.repartidor ? this.getStaffColor(o.repartidor, staffIdx) : '';
             cardElement.draggable = true;
-            cardElement.innerHTML = this.createCardHTML(o, staff);
+            cardElement.innerHTML = this.createCardHTML(o, staff, staffName, userRole);
 
             this.attachCardEvents(cardElement, o, handlers, staff);
 
@@ -87,8 +101,11 @@ export const uiManager = {
         });
     },
 
-    createCardHTML(o, staff) {
+    createCardHTML(o, staff, staffName, userRole) {
         const isAssigned = !!o.repartidor;
+        const isMyOrder = o.repartidor === staffName;
+        const isStoreView = !staffName || userRole === 'admin';
+
         let actionArea = '';
         if (isAssigned) {
             actionArea = `<button class="finish-btn flex-1 bg-emerald-600 text-white text-xs font-black py-3 rounded-lg uppercase shadow-lg hover:bg-emerald-500">Finalizar</button>`;
@@ -96,6 +113,41 @@ export const uiManager = {
             actionArea = `<div class="flex flex-wrap gap-2 w-full">` +
                 staff.map(r => `<button class="assign-btn" data-staff="${r}">${r}</button>`).join('') +
                 `</div>`;
+        }
+
+        // UI de Incidencias
+        let incidentUI = '';
+        if (o.incident) {
+            incidentUI = `
+                <div class="mt-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl animate-pulse-slow">
+                    <p class="text-[10px] font-black text-red-500 uppercase mb-1"><i class="fas fa-exclamation-triangle mr-1"></i> Contratiempo reported</p>
+                    <p class="text-xs font-bold text-slate-700">${o.incident}</p>
+                    ${o.response ? `
+                        <div class="mt-2 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                            <p class="text-[9px] font-black text-emerald-600 uppercase mb-0.5">Respuesta del Local:</p>
+                            <p class="text-[11px] font-bold text-emerald-800">${o.response}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // Botones de acción para incidencias
+        let incidentActions = '';
+        if (isAssigned) {
+            if (isMyOrder) {
+                incidentActions = `
+                    <button class="report-incident-btn p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition" title="Reportar Problema">
+                        <i class="fas fa-comment-dots text-lg"></i>
+                    </button>
+                `;
+            } else if (isStoreView && o.incident && !o.response) {
+                incidentActions = `
+                    <button class="respond-incident-btn p-2 text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition" title="Responder">
+                        <i class="fas fa-reply text-lg"></i>
+                    </button>
+                `;
+            }
         }
 
         return `
@@ -107,12 +159,21 @@ export const uiManager = {
                 <div class="text-right flex flex-col items-end">
                     <span class="text-xs font-bold text-slate-500 block mb-1">${o.time}</span>
                     <span class="text-[10px] font-black block uppercase px-2 py-0.5 rounded ${isAssigned ? 'bg-slate-800' : 'badge-local-gradiente'}" style="color:${isAssigned ? '#ffffff' : '#0f172a'}">${isAssigned ? o.repartidor : 'EN CASA'}</span>
-                    ${isAssigned ? '' : '<span class="text-[9px] block text-slate-400 mt-1">Control local</span>'}
                 </div>
             </div>
+            
+            ${incidentUI}
+
             <div class="flex justify-between items-center mt-3 pt-2 border-t border-slate-800/50">
                     <div class="flex-grow">${actionArea}</div>
-                    <button class="delete-order-btn p-3 text-slate-600 hover:text-red-500 transition hover:bg-red-500/10 rounded-lg ml-2"><i class="fas fa-trash-alt text-lg"></i></button>
+                    <div class="flex gap-1 ml-2">
+                        ${incidentActions}
+                        ${userRole === 'admin' ? `
+                            <button class="delete-order-btn p-3 text-slate-600 hover:text-red-500 transition hover:bg-red-500/10 rounded-lg">
+                                <i class="fas fa-trash-alt text-lg"></i>
+                            </button>
+                        ` : ''}
+                    </div>
             </div>
         `;
     },
@@ -133,6 +194,88 @@ export const uiManager = {
         card.querySelectorAll('.assign-btn').forEach(btn => {
             btn.onclick = () => handlers.onAssignOrder(o.id, btn.getAttribute('data-staff'));
         });
+
+        const reportBtn = card.querySelector('.report-incident-btn');
+        if (reportBtn) reportBtn.onclick = () => this.showIncidentModal(o.id, handlers);
+
+        const respondBtn = card.querySelector('.respond-incident-btn');
+        if (respondBtn) respondBtn.onclick = () => this.showResponseModal(o.id, handlers);
+    },
+
+    showIncidentModal(id, handlers) {
+        const options = ["No atiende timbre ni tel.", "No aparece la altura", "Tarda mucho", "Problema con el pago", "Dirección incorrecta"];
+        const menu = document.createElement('div');
+        menu.className = 'fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4';
+        menu.innerHTML = `
+            <div class="glass-panel p-6 rounded-3xl shadow-2xl border border-white/10 max-w-xs w-full flex flex-col gap-4 animate-in fade-in zoom-in duration-200">
+                <div class="text-center">
+                    <p class="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1">Notificar Contratiempo</p>
+                    <h3 class="text-2xl font-black text-white font-mono">#${id}</h3>
+                </div>
+                <div class="grid grid-cols-1 gap-2 mt-2">
+                    ${options.map(opt => `
+                        <button class="incident-opt p-4 rounded-xl font-bold text-[11px] transition-all bg-slate-800 text-slate-300 hover:bg-red-500/20 hover:text-red-400 border border-white/5 text-left" data-opt="${opt}">
+                            ${opt}
+                        </button>
+                    `).join('')}
+                    <input type="text" id="custom-incident" placeholder="Otro motivo..." class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl text-xs font-bold outline-none focus:border-red-500 mt-2">
+                </div>
+                <div class="flex gap-2">
+                    <button id="cancel-incident" class="flex-1 p-3 text-[10px] font-black text-slate-500 uppercase">Cancelar</button>
+                    <button id="confirm-custom-incident" class="flex-1 bg-red-600 text-white p-3 rounded-xl font-black text-[10px] uppercase shadow-lg shadow-red-600/20">Enviar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(menu);
+
+        menu.querySelectorAll('.incident-opt').forEach(btn => {
+            btn.onclick = () => {
+                handlers.onReportIncident(id, btn.dataset.opt);
+                menu.remove();
+            };
+        });
+
+        document.getElementById('confirm-custom-incident').onclick = () => {
+            const val = document.getElementById('custom-incident').value.trim();
+            if (val) {
+                handlers.onReportIncident(id, val);
+                menu.remove();
+            }
+        };
+
+        document.getElementById('cancel-incident').onclick = () => menu.remove();
+    },
+
+    showResponseModal(id, handlers) {
+        const options = ["Ok", "Ya lo llamo", "Me fijo y te aviso", "Regresa al local"];
+        const menu = document.createElement('div');
+        menu.className = 'fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4';
+        menu.innerHTML = `
+            <div class="glass-panel p-6 rounded-3xl shadow-2xl border border-white/10 max-w-xs w-full flex flex-col gap-4 animate-in fade-in zoom-in duration-200">
+                <div class="text-center">
+                    <p class="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">Responder al Repartidor</p>
+                    <h3 class="text-2xl font-black text-white font-mono">#${id}</h3>
+                </div>
+                <div class="grid grid-cols-1 gap-2 mt-2">
+                    ${options.map(opt => `
+                        <button class="response-opt p-4 rounded-xl font-bold text-[11px] transition-all bg-slate-800 text-slate-300 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/5 text-left" data-opt="${opt}">
+                            ${opt}
+                        </button>
+                    `).join('')}
+                </div>
+                <button id="cancel-response" class="w-full p-3 text-[10px] font-black text-slate-500 uppercase">Cerrar</button>
+            </div>
+        `;
+        document.body.appendChild(menu);
+
+        menu.querySelectorAll('.response-opt').forEach(btn => {
+            btn.onclick = () => {
+                handlers.onRespondIncident(id, btn.dataset.opt);
+                menu.remove();
+            };
+        });
+
+        document.getElementById('cancel-response').onclick = () => menu.remove();
     },
 
     rebuildKanbanColumns(container, staff, handlers) {
@@ -271,10 +414,10 @@ export const uiManager = {
         const menu = document.createElement('div');
         menu.className = 'fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 backdrop-blur-sm';
         menu.id = 'quick-assign-menu';
-        
+
         const content = document.createElement('div');
         content.className = 'glass-panel p-6 rounded-3xl shadow-2xl border border-white/10 max-w-xs w-full flex flex-col gap-4 animate-in fade-in zoom-in duration-200';
-        
+
         content.innerHTML = `
             <div class="text-center">
                 <p class="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">Asignar Ticket</p>
@@ -282,8 +425,8 @@ export const uiManager = {
             </div>
             <div class="grid grid-cols-1 gap-2 mt-2">
                 ${staff.map((r, i) => {
-                    const color = this.getStaffColor(r, i);
-                    return `
+            const color = this.getStaffColor(r, i);
+            return `
                     <button class="driver-opt flex items-center justify-between p-4 rounded-xl font-bold text-sm transition-all text-white" 
                             data-driver="${r}" 
                             style="background-color: ${color}; border: 1px solid rgba(255,255,255,0.1);">
@@ -291,7 +434,7 @@ export const uiManager = {
                         <i class="fas fa-chevron-right text-[10px] opacity-70"></i>
                     </button>
                     `;
-                }).join('')}
+        }).join('')}
             </div>
             <button id="cancel-quick-assign" class="mt-2 p-3 text-xs font-black text-slate-500 uppercase hover:text-white transition-colors">Cancelar</button>
         `;
@@ -343,8 +486,8 @@ export const uiManager = {
         dz.ondragover = (e) => e.preventDefault();
         dz.ondragenter = (e) => { e.preventDefault(); dz.classList.add('drop-zone-active'); };
         dz.ondragleave = (e) => { if (!dz.contains(e.relatedTarget)) dz.classList.remove('drop-zone-active'); };
-        dz.ondrop = async (e) => { 
-            dz.classList.remove('drop-zone-active'); 
+        dz.ondrop = async (e) => {
+            dz.classList.remove('drop-zone-active');
             const id = e.dataTransfer.getData('id');
             const orders = window.AppState.data.orders;
             if (!orders[id]) {
@@ -430,11 +573,11 @@ export const uiManager = {
         doc.setFontSize(22);
         doc.setTextColor(BRAND_COLOR[0], BRAND_COLOR[1], BRAND_COLOR[2]);
         doc.text("RUTATOTAL 360", 15, 20);
-        
+
         doc.setFontSize(14);
         doc.setTextColor(100);
         doc.text("CENTRO DE CONTROL LOGÍSTICO - REPORTE DE OPERACIONES", 15, 28);
-        
+
         doc.setFontSize(10);
         doc.setTextColor(150);
         doc.text(`Generado el: ${new Date().toLocaleString()}`, 15, 35);
@@ -444,7 +587,7 @@ export const uiManager = {
         doc.setFontSize(12);
         doc.setTextColor(40);
         doc.text("RESUMEN GENERAL DE TICKETS", 15, 48);
-        
+
         doc.autoTable({
             startY: 52,
             head: [['ID', 'OPERADOR', 'ESTADO', 'HORA']],
@@ -465,11 +608,11 @@ export const uiManager = {
             const staffOrders = allOrders.filter(o => o.repartidor === repartidor);
             if (staffOrders.length > 0) {
                 if (currentY > 240) { doc.addPage(); currentY = 20; }
-                
+
                 doc.setFontSize(11);
                 doc.setTextColor(60);
                 doc.text(`OPERADOR: ${repartidor.toUpperCase()}`, 15, currentY);
-                
+
                 doc.autoTable({
                     startY: currentY + 3,
                     head: [['TICKET', 'ESTADO', 'ENTREGA']],
@@ -483,7 +626,7 @@ export const uiManager = {
         });
 
         if (currentY > 180) { doc.addPage(); currentY = 20; }
-        
+
         doc.setFontSize(14);
         doc.setTextColor(BRAND_COLOR[0], BRAND_COLOR[1], BRAND_COLOR[2]);
         doc.text("ESTADÍSTICAS DE DISTRIBUCIÓN", 15, currentY);
@@ -493,9 +636,9 @@ export const uiManager = {
             name: r,
             count: allOrders.filter(o => o.repartidor === r).length
         })).filter(s => s.count > 0);
-        
+
         const total = stats.reduce((acc, s) => acc + s.count, 0);
-        
+
         if (total > 0) {
             const canvas = document.createElement('canvas');
             canvas.width = 500;
@@ -516,28 +659,28 @@ export const uiManager = {
                 ctx.closePath();
                 ctx.fillStyle = palette[i % palette.length];
                 ctx.fill();
-                
+
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 4;
                 ctx.stroke();
 
                 const colorHex = palette[i % palette.length];
-                const r = parseInt(colorHex.slice(1,3), 16);
-                const g = parseInt(colorHex.slice(3,5), 16);
-                const b = parseInt(colorHex.slice(5,7), 16);
-                
+                const r = parseInt(colorHex.slice(1, 3), 16);
+                const g = parseInt(colorHex.slice(3, 5), 16);
+                const b = parseInt(colorHex.slice(5, 7), 16);
+
                 doc.setFillColor(r, g, b);
                 doc.rect(120, currentY + (i * 10), 5, 5, 'F');
                 doc.setTextColor(60);
                 doc.setFontSize(9);
-                doc.text(`${s.name}: ${s.count} pedidos (${Math.round((s.count/total)*100)}%)`, 130, currentY + 4 + (i * 10));
+                doc.text(`${s.name}: ${s.count} pedidos (${Math.round((s.count / total) * 100)}%)`, 130, currentY + 4 + (i * 10));
 
                 startAngle += sliceAngle;
             });
 
             const imgData = canvas.toDataURL('image/png');
             doc.addImage(imgData, 'PNG', 15, currentY - 5, 90, 90);
-            
+
             doc.setFontSize(10);
             doc.setTextColor(150);
             doc.text(`Total de pedidos analizados: ${total}`, 15, currentY + 95);

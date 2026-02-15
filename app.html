@@ -406,6 +406,38 @@
         .card-local-border {
             border-left: 4px solid #F97316 !important;
         }
+
+        @keyframes pulse-slow {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.8;
+                transform: scale(0.98);
+            }
+        }
+
+        .animate-pulse-slow {
+            animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Estilos para el texto de incidencia */
+        .incident-badge {
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #ef4444;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
     </style>
 </head>
 
@@ -431,14 +463,16 @@
 
                 <div class="flex items-center gap-4">
                     <div>
-                        <h1 class="text-2xl font-black text-main tracking-tight uppercase leading-none mb-1">RUTATOTAL<span
-                                class="text-emerald-500">360</span></h1>
+                        <h1 class="text-2xl font-black text-main tracking-tight uppercase leading-none mb-1">
+                            RUTATOTAL<span class="text-emerald-500">360</span></h1>
                         <p id="user-display"
                             class="text-[11px] text-emerald-500/80 font-mono uppercase tracking-tighter font-bold">
                             CONECTANDO...</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button id="logoutBtn-quick" class="p-2 text-slate-600 hover:text-red-500 transition-all rounded-full hover:bg-red-500/10 hidden" title="Cerrar Sesión">
+                        <button id="logoutBtn-quick"
+                            class="p-2 text-slate-600 hover:text-red-500 transition-all rounded-full hover:bg-red-500/10 hidden"
+                            title="Cerrar Sesión">
                             <i class="fas fa-sign-out-alt"></i>
                         </button>
                     </div>
@@ -450,7 +484,8 @@
                     class="p-2 px-3 bg-emerald-600/10 text-emerald-500 border border-emerald-500/20 rounded-lg font-bold text-[10px] hover:bg-emerald-600 hover:text-white transition-all">
                     <i class="fas fa-terminal"></i>
                 </button>
-                <button id="burger-menu-btn" class="p-3 bg-slate-800 text-white rounded-xl hover:bg-slate-700 transition-all shadow-lg active:scale-95">
+                <button id="burger-menu-btn"
+                    class="p-3 bg-slate-800 text-white rounded-xl hover:bg-slate-700 transition-all shadow-lg active:scale-95">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
             </div>
@@ -544,35 +579,45 @@
     </div>
 
     <!-- Menú Lateral (Burger) -->
-    <div id="side-menu-overlay" class="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[100] hidden opacity-0 transition-opacity duration-300"></div>
-    <div id="side-menu" class="fixed right-0 top-0 h-full w-80 glass-panel border-l border-white/5 z-[101] translate-x-full transition-transform duration-300 p-8 flex flex-col gap-8 shadow-2xl">
+    <div id="side-menu-overlay"
+        class="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[100] hidden opacity-0 transition-opacity duration-300">
+    </div>
+    <div id="side-menu"
+        class="fixed right-0 top-0 h-full w-80 glass-panel border-l border-white/5 z-[101] translate-x-full transition-transform duration-300 p-8 flex flex-col gap-8 shadow-2xl">
         <div class="flex items-center justify-between">
             <div class="flex flex-col">
                 <h2 class="text-xl font-black text-white uppercase tracking-tighter">Panel Maestro</h2>
                 <div class="h-1 w-12 bg-emerald-500 rounded-full mt-1"></div>
             </div>
-            <button id="close-side-menu" class="p-2 text-slate-400 hover:text-white transition-colors bg-white/5 rounded-lg">
+            <button id="close-side-menu"
+                class="p-2 text-slate-400 hover:text-white transition-colors bg-white/5 rounded-lg">
                 <i class="fas fa-times text-xl"></i>
             </button>
         </div>
-        
+
         <div class="flex flex-col gap-4">
-            <p class="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-2">Operaciones Estratégicas</p>
-            <button id="open-staff-modal-btn" class="flex items-center w-full p-4 rounded-2xl font-bold text-sm transition-all duration-200 bg-white/5 text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 border border-white/5">
+            <p class="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-2">Operaciones Estratégicas
+            </p>
+            <button id="open-staff-modal-btn"
+                class="flex items-center w-full p-4 rounded-2xl font-bold text-sm transition-all duration-200 bg-white/5 text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 border border-white/5">
                 <i class="fas fa-users w-8 text-emerald-500"></i> Gestión de Flota
             </button>
-            <button id="open-history-modal-btn" class="flex items-center w-full p-4 rounded-2xl font-bold text-sm transition-all duration-200 bg-white/5 text-slate-300 hover:bg-violet-500/10 hover:text-violet-400 border border-white/5">
+            <button id="open-history-modal-btn"
+                class="flex items-center w-full p-4 rounded-2xl font-bold text-sm transition-all duration-200 bg-white/5 text-slate-300 hover:bg-violet-500/10 hover:text-violet-400 border border-white/5">
                 <i class="fas fa-brain w-8 text-violet-500"></i> Reportes & Auditoría
             </button>
-            <button id="theme-toggle" class="flex items-center w-full p-4 rounded-2xl font-bold text-sm transition-all duration-200 bg-white/5 text-slate-300 hover:bg-amber-500/10 hover:text-amber-400 border border-white/5">
+            <button id="theme-toggle"
+                class="flex items-center w-full p-4 rounded-2xl font-bold text-sm transition-all duration-200 bg-white/5 text-slate-300 hover:bg-amber-500/10 hover:text-amber-400 border border-white/5">
                 <i id="theme-icon" class="fas fa-sun w-8 text-amber-500"></i> <span id="theme-text">Cambiar Tema</span>
             </button>
         </div>
 
         <div class="mt-auto">
             <div class="bg-red-500/5 rounded-2xl p-4 border border-red-500/10">
-                <p class="text-[10px] text-red-400/50 font-black uppercase tracking-[0.2em] mb-4">Seguridad de Acceso</p>
-                <button id="logoutBtn" class="flex items-center justify-center w-full p-4 rounded-xl font-black text-xs uppercase transition-all duration-200 bg-red-600 text-white hover:bg-red-500 shadow-lg shadow-red-600/20 active:scale-95">
+                <p class="text-[10px] text-red-400/50 font-black uppercase tracking-[0.2em] mb-4">Seguridad de Acceso
+                </p>
+                <button id="logoutBtn"
+                    class="flex items-center justify-center w-full p-4 rounded-xl font-black text-xs uppercase transition-all duration-200 bg-red-600 text-white hover:bg-red-500 shadow-lg shadow-red-600/20 active:scale-95">
                     <i class="fas fa-sign-out-alt mr-3"></i> Cerrar Sesión Segura
                 </button>
             </div>

@@ -5,7 +5,7 @@ export const databaseService = {
     subscribeToOrders(callback) {
         if (!auth.currentUser) {
             console.warn("Attempted to subscribe to orders without authentication.");
-            return () => {};
+            return () => { };
         }
         const ordersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'orders');
         return onSnapshot(ordersRef, (snapshot) => {
@@ -20,7 +20,7 @@ export const databaseService = {
     subscribeToStaff(callback) {
         if (!auth.currentUser) {
             console.warn("Attempted to subscribe to staff without authentication.");
-            return () => {};
+            return () => { };
         }
         const configRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'config', 'staff');
         return onSnapshot(configRef, (snapshot) => {
@@ -60,7 +60,25 @@ export const databaseService = {
         const orderRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'orders', id.toString());
         await updateDoc(orderRef, {
             status: 'entregado',
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            deliveredAt: serverTimestamp()
+        });
+    },
+
+    async reportIncident(id, text) {
+        const orderRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'orders', id.toString());
+        await updateDoc(orderRef, {
+            incident: text,
+            incidentTime: Date.now(),
+            response: null // Reset response if a new incident is reported
+        });
+    },
+
+    async respondToIncident(id, text) {
+        const orderRef = doc(db, 'artifacts', APP_ID, 'public', 'data', 'orders', id.toString());
+        await updateDoc(orderRef, {
+            response: text,
+            responseTime: Date.now()
         });
     },
 
@@ -80,7 +98,7 @@ export const databaseService = {
         const batch = writeBatch(db);
         const now = new Date();
         const monthId = `${now.getFullYear()}_${String(now.getMonth() + 1).padStart(2, '0')}`;
-        
+
         Object.entries(orders).forEach(([id, data]) => {
             // 1. Preparar copia en el archivo
             const archiveRef = doc(db, 'artifacts', APP_ID, 'archive', monthId, 'orders', id.toString());

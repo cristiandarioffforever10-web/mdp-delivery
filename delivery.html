@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vista Repartidor - RutaTotal 360 PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://unpkg.com/tone@14.7.77/build/Tone.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+
+        :root {
+            --bg-main: #0a0f1e;
+            --bg-card: #161e31;
+            --accent-emerald: #00A382;
+            --accent-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .delivery-header {
+            padding: 20px;
+            background: linear-gradient(to bottom, #0a0f1e, #161e31);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+        }
+
+        .driver-name {
+            font-size: 14px;
+            font-weight: 900;
+            color: #00d2ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-input {
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .lightning-btn {
+            background: #00d2ff;
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+        }
+
+        .orders-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            color: #0f172a;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+            border-left: 6px solid #00d2ff;
+        }
+
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .ticket-label {
+            font-size: 10px;
+            font-weight: 900;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .ticket-id {
+            font-size: 32px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .ticket-time {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+        }
+
+        .driver-badge {
+            background: #1e293b;
+            color: white;
+            font-size: 10px;
+            font-weight: 900;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 15px 0;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .finalize-btn {
+            background: #10b981;
+            color: white;
+            flex-grow: 1;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .trash-btn {
+            color: #94a3b8;
+            font-size: 18px;
+            padding: 10px;
+        }
+
+        /* Incidents */
+        .report-btn {
+            color: #ef4444;
+            font-size: 18px;
+            padding: 10px;
+        }
+
+        .incident-box {
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .incident-text {
+            color: #be123c;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .response-box {
+            background: #ecfdf5;
+            border: 1px solid #d1fae5;
+            border-radius: 8px;
+            padding: 8px;
+            margin-top: 8px;
+        }
+
+        .response-text {
+            color: #065f46;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #1e293b;
+            width: 100%;
+            max-width: 320px;
+            border-radius: 24px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .incident-opt {
+            width: 100%;
+            padding: 14px;
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            color: #94a3b8;
+            font-weight: 700;
+            font-size: 12px;
+            text-align: left;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .incident-opt:active {
+            background: #ef4444;
+            color: white;
+        }
+
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            background: #0a0f1e;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="loading-screen">
+        <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-cyan-500 mb-4"></div>
+        <p class="text-slate-500 text-[10px] font-black uppercase tracking-widest">Sincronizando Ruta...</p>
+    </div>
+
+    <header class="delivery-header">
+        <div id="driver-name-display" class="driver-name">Cargando...</div>
+        <div class="search-container">
+            <input type="text" placeholder="Auditoria..." class="search-input">
+            <button class="lightning-btn"><i class="fas fa-bolt"></i></button>
+            <button id="logout-btn" class="text-slate-500 ml-2"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </header>
+
+    <main id="orders-list" class="orders-list">
+        <!-- Tarjetas de pedidos se cargarán aquí -->
+    </main>
+
+    <!-- Modal de Incidencias -->
+    <div id="incident-modal" class="modal">
+        <div class="modal-content">
+            <div class="text-center mb-4">
+                <p class="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1">Notificar Contratiempo</p>
+                <h3 id="modal-ticket-id" class="text-2xl font-black text-white">#0</h3>
+            </div>
+            <div id="incident-options">
+                <button class="incident-opt" data-opt="No atiende timbre ni tel.">No atiende timbre ni tel.</button>
+                <button class="incident-opt" data-opt="No aparece la altura">No aparece la altura</button>
+                <button class="incident-opt" data-opt="Tarda mucho">Tarda mucho</button>
+                <button class="incident-opt" data-opt="Problema con el pago">Problema con el pago</button>
+                <button class="incident-opt" data-opt="Dirección incorrecta">Dirección incorrecta</button>
+            </div>
+            <button id="close-modal"
+                class="w-full p-3 text-[10px] font-black text-slate-500 uppercase mt-2">Cancelar</button>
+        </div>
+    </div>
+
+    <script type="module" src="./src/delivery.js"></script>
+</body>
+
+</html>
