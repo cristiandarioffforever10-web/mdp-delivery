@@ -85,16 +85,28 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
+            max-width: 350px;
+            /* Ancho similar a la columna del monitor */
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Estilos base para igualar al monitor */
+        .badge-local-gradiente {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
         }
 
         .order-card {
             background: white;
-            border-radius: 20px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 16px;
             color: #0f172a;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             position: relative;
-            border-left: 6px solid #00d2ff;
+            border-left: 4px solid #F97316;
+            width: 100%;
         }
 
         .ticket-header {
@@ -149,28 +161,36 @@
         .finalize-btn {
             background: #10b981;
             color: white;
-            flex-grow: 1;
-            padding: 14px;
-            border-radius: 12px;
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
             font-weight: 900;
             text-transform: uppercase;
-            font-size: 14px;
-            letter-spacing: 1px;
+            font-size: 11px;
+            letter-spacing: 0.5px;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+            margin-top: 8px;
         }
 
-        .trash-btn {
-            color: #94a3b8;
-            font-size: 18px;
-            padding: 10px;
+        .finalize-btn:hover {
+            background: #059669;
         }
 
-        /* Incidents */
+        .trash-btn,
         .report-btn {
+            color: #94a3b8;
+            font-size: 14px;
+            padding: 8px;
+            transition: color 0.2s;
+        }
+
+        .report-btn:hover {
             color: #ef4444;
-            font-size: 18px;
-            padding: 10px;
+        }
+
+        .trash-btn:hover {
+            color: #475569;
         }
 
         .incident-box {

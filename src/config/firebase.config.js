@@ -15,5 +15,5 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-export { auth, db };
+export { auth, db, firebaseConfig };
 export const APP_ID = 'logistica-pro-360';

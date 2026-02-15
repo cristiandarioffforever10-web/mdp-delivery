@@ -87,6 +87,7 @@
     <script type="module">
         import { getURLs } from '../src/config/urls.js';
         import { authService } from '../src/services/auth.service.js';
+        import { loginDeliveryWithPIN } from '../src/delivery.js';
 
         const URLs = getURLs();
 
@@ -119,11 +120,13 @@
             }
 
             try {
-                const staffData = await authService.loginWithPIN(pin);
+                // Usamos la función de login AISLADA para no cerrar la sesión del admin en la App principal
+                const staffData = await loginDeliveryWithPIN(pin);
                 localStorage.setItem('rutatotal_role', 'operativo');
                 localStorage.setItem('rutatotal_staff_name', staffData.name || 'Operario');
                 window.location.href = URLs.delivery;
             } catch (e) {
+                console.error(e);
                 showError("Acceso denegado: PIN incorrecto");
             }
         };
